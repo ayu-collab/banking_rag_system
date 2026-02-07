@@ -1,24 +1,33 @@
-version: '3.8'
-
 services:
-  qdrant:
-    image: qdrant/qdrant:latest
-    ports:
-      - "6333:6333"
-    volumes:
-      - ./qdrant_storage:/qdrant/storage
-
-  redis:
-    image: redis:latest
-    ports:
-      - "6379:6379"
-
   app:
     build: .
     ports:
       - "8000:8000"
     env_file:
       - .env
+    environment:
+      - REDIS_HOST=redis
+      - QDRANT_URL=http://qdrant:6333
     depends_on:
       - qdrant
       - redis
+    volumes:
+      - .:/app   # optional: hot reload during dev
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_storage:/qdrant/storage
+
+volumes:
+  redis_data:
+  qdrant_storage:

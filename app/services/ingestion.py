@@ -27,7 +27,7 @@ def process_pdf(file_path: str, strategy: str):
     chunks = splitter.split_documents(docs)
 
     # 3. Upload to Qdrant
-    url = os.getenv("QDRANT_URL", "http://localhost:6333")
+    url = os.getenv("QDRANT_URL", "http://qdrant:6333")
     
     vector_store = QdrantVectorStore.from_documents(
         chunks,

@@ -6,6 +6,8 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.chat_message_histories import RedisChatMessageHistory
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.tools import tool
+from qdrant_client import QdrantClient
+from qdrant_client.http import exceptions
 from app.services.booking import save_booking, init_db
 from app.models import BookingRequest
 
@@ -17,13 +19,8 @@ if not GROQ_API_KEY:
 # Initialize DB on startup
 init_db()
 
-# Embeddings + Vector Store
+# Initialize Embeddings globally
 embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-vector_store = QdrantVectorStore.from_existing_collection(
-    embedding=embeddings,
-    collection_name="banking_docs",
-    url=os.getenv("QDRANT_URL", "http://localhost:6333")
-)
 
 # THE BOOKING TOOL 
 @tool
@@ -51,12 +48,33 @@ def get_chat_response(user_query: str, session_id: str):
     # Retrieve conversation history from Redis
     history = RedisChatMessageHistory(
         session_id=session_id,
-        url=f"redis://{os.getenv('REDIS_HOST', 'localhost')}:6379/0"
+        url=f"redis://{os.getenv('REDIS_HOST', 'redis')}:6379/0"
     )
 
-    # Search Qdrant for relevant banking context
-    docs = vector_store.similarity_search(user_query, k=3)
-    context = "\n".join([doc.page_content for doc in docs])
+    # DYNAMIC VECTOR STORE INITIALIZATION
+    # This prevents the 404 crash if the collection isn't created yet
+    qdrant_url = os.getenv("QDRANT_URL", "http://qdrant:6333")
+    collection_name = "banking_docs"
+    
+    context = "No relevant banking documents found yet. Please upload a PDF to provide context."
+    docs = []
+
+    try:
+        # Check if collection exists before connecting
+        client = QdrantClient(url=qdrant_url)
+        if client.collection_exists(collection_name):
+            vector_store = QdrantVectorStore(
+                client=client,
+                embedding=embeddings,
+                collection_name=collection_name
+            )
+            # Search Qdrant for relevant banking context
+            docs = vector_store.similarity_search(user_query, k=3)
+            if docs:
+                context = "\n".join([doc.page_content for doc in docs])
+    except Exception as e:
+        print(f"Vector Store not ready: {e}")
+        # We don't crash, we just proceed with empty context
 
     # Build the prompt
     prompt = ChatPromptTemplate.from_messages([
@@ -66,7 +84,7 @@ def get_chat_response(user_query: str, session_id: str):
         1. Use the provided context to answer banking questions.
         2. If the user wants to book an interview, you MUST ask for their Name, Email, Date, and Time.
         3. DO NOT call the 'book_interview' tool until the user has provided ALL 4 pieces of information.
-        4. DO NOT make up or guess any information.
+        4. If you don't know the answer from context, politely say you don't have that information.
         
         Context: {context}"""),
         ("placeholder", "{chat_history}"),
@@ -86,12 +104,13 @@ def get_chat_response(user_query: str, session_id: str):
         for tool_call in response.tool_calls:
             if tool_call["name"] == "book_interview":
                 result = book_interview.invoke(tool_call["args"])
-                # Add the tool result back to history
                 history.add_user_message(user_query)
                 history.add_ai_message(f"I have successfully booked your appointment. {result}")
                 return f"I have successfully booked your appointment. {result}", ["SQLite Database"]
 
-    # Default: save normal conversation
+    # Save normal conversation
     history.add_user_message(user_query)
     history.add_ai_message(response.content)
-    return response.content, [doc.metadata.get("source", "Banking.pdf") for doc in docs]
+    
+    sources = [doc.metadata.get("source", "Banking.pdf") for doc in docs] if docs else ["No source found"]
+    return response.content, sources
