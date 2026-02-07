@@ -29,7 +29,7 @@ This project implements a Retrieval-Augmented Generation (RAG) pipeline to provi
 
 1. **Clone the repository:**
    ```bash
-   git clone <>
+   git clone <https://github.com/ayu-collab/banking_rag_system>
    cd palm-mind-task
 
   
@@ -77,16 +77,19 @@ Ask questions about the PDF or request an interview booking.
 
 ```plaintext
 ├── app/
-│   ├── main.py          # FastAPI Entry Point & Routes
-│   ├── models.py        # Pydantic Schemas (Data Contracts)
+│   ├── main.py            # FastAPI Entry Point & Routes
+│   ├── models.py          # Pydantic Schemas (Data Contracts)
 │   └── services/
-│       ├── ingestion.py # PDF Processing & Vector Upload
-│       ├── rag.py       # RAG Logic & Tool Calling
-│       └── booking.py   # SQLite Database Operations
-├── data/                # Sample Documents
-├── Dockerfile           # App Containerization
-├── docker-compose.yml   # Multi-container Setup (App, Qdrant, Redis)
-└── requirements.txt     # Project Dependencies
+│       ├── ingestion.py   # PDF Processing & Vector Upload
+│       ├── rag.py         # RAG Logic & Tool Calling
+│       └── booking.py     # SQLite Database Operations
+├── data/                  # Sample Documents
+├── .dockerignore          # Docker ignore rules
+├── Dockerfile             # App Containerization
+├── docker-compose.yml     # Multi-container Setup (App, Qdrant, Redis)
+└── requirements.txt       # Project Dependencies
+
+```
 
 ## Design Decisions
 
