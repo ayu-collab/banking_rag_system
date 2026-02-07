@@ -1,0 +1,15 @@
+# Environments
+venv/
+.env
+
+# Databases
+*.db
+qdrant_storage/
+
+# Python
+__pycache__/
+*.pyc
+
+# OS
+.DS_Store
+Thumbs.db
