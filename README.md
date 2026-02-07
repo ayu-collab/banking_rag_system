@@ -60,7 +60,7 @@ Upload the `Banking.pdf` to populate the vector database found in the data/ fold
 - `file`: (Upload PDF)
 - `strategy`: `"recursive"` or `"fixed"`
 
-![Ingestion Demo](./images/ingest_demo.png)
+![Ingestion Demo](./assets/ingest_demo.png)
 
 ### 2. Chat & Book
 
@@ -73,11 +73,11 @@ Ask questions about the PDF or request an interview booking.
 - `query`: `"What is a savings account?"` or `"I want to book an interview"`
 - `session_id`: `"unique_user_id"` (to maintain memory)
 
-![Normal Chat](./images/chat.png)
+![Normal Chat](./assets/chat.png)
 
-![Booking Chat](./images/chat_booking.png)
+![Booking Chat](./assets/chat_booking.png)
 
-![Booking Chat](./images/chat_booking1.png)
+![Booking Chat](./assets/chat_booking1.png)
 
 **Example Request**:
 
