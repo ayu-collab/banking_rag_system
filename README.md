@@ -3,11 +3,6 @@
 A modular, production-ready backend built with FastAPI that leverages Large Language Models (LLM) to answer questions from a Banking Guide and automate interview bookings.
 
 
-## Recent Updates & Fixes
-- **Docker Networking:** Fully containerized service communication using Docker internal DNS.
-- **Resilient Startup:** Implemented lazy-loading for the Vector Store to prevent app crashes if the database collection hasn't been initialized yet.
-- **Enhanced Reliability:** Added auto-check for Qdrant collections before similarity searches.
-
 ## Overview
 This project implements a Retrieval-Augmented Generation (RAG) pipeline to provide accurate information based on a provided Banking PDF. It features a "Booking Specialist" that uses LLM Tool Calling to capture user details and store them in a database.
 
